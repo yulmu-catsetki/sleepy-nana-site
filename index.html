@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>sleepy nana ⋆.˚</title>
+<meta name="description" content="졸린 나나를 만지고 깨워주세요. 살살 쓰다듬어 주세요." />
+<meta property="og:title" content="sleepy nana ⋆.˚" />
+<meta property="og:description" content="졸린 나나를 만지고 깨워주세요." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg-1: #694d4f;
+    --pink: #ffb3c7;
+    --pink-soft: #ffd4dd;
+    --pink-deep: #e29f90;
+    --cream: #fff4e8;
+    --gold: #e6c887;
+    --lilac: #c9a8e0;
+    --ink: #2a1530;
+    --star: #fff8e1;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    font-family: 'Gowun Dodum', system-ui, sans-serif;
+    color: var(--cream);
+    background: var(--bg-1);
+    position: relative;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+
+
+  /* 메인 레이아웃 */
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    z-index: 10;
+  }
+
+  header {
+    padding: 28px 40px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    pointer-events: none;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .brand-mark {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 26px;
+    letter-spacing: 0.02em;
+    color: var(--pink-soft);
+    text-shadow: 0 0 20px rgba(255, 179, 199, 0.4);
+  }
+  .brand-mark .accent {
+    color: var(--gold);
+    font-style: normal;
+  }
+  .brand-sub {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255, 244, 232, 0.5);
+  }
+
+  .credits {
+    font-size: 11px;
+    text-align: right;
+    color: rgba(255, 244, 232, 0.55);
+    letter-spacing: 0.05em;
+    line-height: 1.7;
+  }
+  .credits a {
+    color: var(--pink-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(255, 212, 221, 0.4);
+    transition: color 0.3s, border-color 0.3s;
+    pointer-events: auto;
+  }
+  .credits a:hover {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* 캔버스 컨테이너 */
+  .canvas-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    min-height: 0;
+  }
+
+  .canvas-frame {
+    position: relative;
+    width: min(560px, 90vw, 70vh);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #riveCanvas {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+    display: block;
+  }
+  #riveCanvas:active { cursor: grabbing; }
+
+  /* 로딩 */
+  .loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    transition: opacity 0.6s ease;
+    z-index: 5;
+  }
+  .loading.hide { opacity: 0; pointer-events: none; }
+  .loading-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 18px;
+    color: var(--pink-soft);
+    letter-spacing: 0.05em;
+  }
+  .loading-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .loading-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--pink);
+    border-radius: 50%;
+    animation: bounce 1.4s ease-in-out infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-10px); opacity: 1; }
+  }
+
+  /* HUD - 드래그 인텐시티 표시 */
+  .hud {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 244, 232, 0.55);
+    pointer-events: none;
+    z-index: 20;
+  }
+  .hud-label { white-space: nowrap; }
+  .hud-bar {
+    position: relative;
+    width: 120px;
+    height: 3px;
+    background: rgba(255, 244, 232, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .hud-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--pink), var(--gold));
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--pink);
+    transition: width 0.05s linear;
+  }
+  .hud-value {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--pink-soft);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  /* 푸터 / 안내 */
+  footer {
+    padding: 20px 40px 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+  }
+  .hint {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 15px;
+    color: rgba(255, 212, 221, 0.7);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hint::before, .hint::after {
+    content: '';
+    width: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 212, 221, 0.3), transparent);
+  }
+
+  /* 반응형 */
+  @media (max-width: 640px) {
+    header { padding: 18px 20px 0; flex-direction: column; gap: 8px; }
+    .brand-mark { font-size: 22px; }
+    .credits { text-align: left; font-size: 10px; }
+    .hud { left: 16px; bottom: 16px; font-size: 10px; gap: 10px; }
+    .hud-bar { width: 80px; }
+    .hint { font-size: 13px; }
+  }
+
+</style>
+</head>
+<body>
+
+  <main class="stage" id="stage">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">bukbukbuk </span> ⋆˚</div>
+      </div>
+      <div class="credits">
+        artwork &amp; animation by <a href="https://x.com/mianrii_0" target="_blank" rel="noopener">@mianrii_0</a><br />
+      </div>
+    </header>
+
+    <section class="canvas-wrap">
+      <div class="canvas-frame">
+        <div class="loading" id="loading">
+          <div class="loading-text">waking nana ...</div>
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+        </div>
+        <canvas id="riveCanvas" width="800" height="800" aria-label="졸린 나나를 만지고 드래그해서 깨워주세요"></canvas>
+      </div>
+
+      <div class="hud" aria-hidden="true">
+        <span class="hud-label">awake</span>
+        <div class="hud-bar"><div class="hud-fill" id="hudFill"></div></div>
+        <span class="hud-value" id="hudValue">0</span>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/@rive-app/canvas@2.37.6"></script>
+  <script src="app.js"></script>
+</body>
+</html>
