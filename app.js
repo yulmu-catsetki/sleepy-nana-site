@@ -12,7 +12,7 @@
 
   // Rive 인스턴스 — autoBind: true로 기본 ViewModel 인스턴스가 자동으로 붙음
   const r = new rive.Rive({
-    src: 'sleepy_nana.riv',
+    src: 'sleepy_nana_v1.riv',
     canvas: canvas,
     autoplay: true,
     stateMachines: 'State Machine 1',
